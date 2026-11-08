@@ -9,11 +9,13 @@
 #    NIRI_MODE=hardware|full    -> hardware (mặc định): giữ config niri
 #                                  của CachyOS, chỉ include hardware.kdl
 #                                  full: thay bằng config custom Omarchy-style
+#    PRETTY=1|0                 -> 1 (mặc định): cài font/icon/theme/ghostty
 # ============================================================
 set -uo pipefail
 
 ENABLE_ACER_AUDIO_QUIRK="${ENABLE_ACER_AUDIO_QUIRK:-0}"
 NIRI_MODE="${NIRI_MODE:-hardware}"
+PRETTY="${PRETTY:-1}"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 msg()  { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
@@ -112,6 +114,11 @@ else
     warn "rồi chạy: niri validate"
   fi
 fi
+
+# Snippet giao diện (tham khảo, không auto-include)
+install -Dm644 "$HERE/config/niri/pretty.kdl" "$HOME/.config/niri/pretty.kdl"
+ok "Đã copy pretty.kdl (snippet tham khảo, sửa tay nếu muốn)"
+
 install -Dm644 "$HERE/config/environment.d/10-wayland.conf" "$HOME/.config/environment.d/10-wayland.conf"
 sudo install -Dm644 "$HERE/config/modprobe.d/99-nvidia.conf" /etc/modprobe.d/99-nvidia.conf
 sudo install -Dm644 "$HERE/config/zram-generator.conf" /etc/systemd/zram-generator.conf
@@ -125,6 +132,14 @@ if [ "$ENABLE_ACER_AUDIO_QUIRK" = "1" ]; then
   ok "Đã bật quirk audio ALC295"
 else
   warn "Chưa bật quirk audio (bật sau bằng: ENABLE_ACER_AUDIO_QUIRK=1 ./post-install.sh)"
+fi
+
+# ------------------------------------------------------------
+if [ "$PRETTY" = "1" ]; then
+  msg "6b/9  Giao diện: font, icon, cursor, terminal"
+  bash "$HERE/theme.sh" || warn "theme.sh có lỗi — bỏ qua phần giao diện"
+else
+  warn "PRETTY=0 -> bỏ qua giao diện (chạy ./theme.sh sau nếu muốn)"
 fi
 
 # ------------------------------------------------------------

@@ -1,0 +1,67 @@
+// ============================================================
+//  Giao diện "đẹp" — tối ưu cho Intel UHD + 2 màn 144Hz
+//
+//  ⚠️ ĐÂY LÀ SNIPPET THAM KHẢO, KHÔNG tự include.
+//  Lý do: config niri của CachyOS đã có sẵn block `layout {}`,
+//  `animations {}`, `window-rule {}`. Include thêm sẽ bị lỗi
+//  trùng section.
+//
+//  Cách dùng: mở ~/.config/niri/config.kdl, tìm block tương ứng
+//  và THAY giá trị bên trong bằng các giá trị dưới đây.
+//  Sau đó:  niri validate
+// ============================================================
+
+layout {
+    // Khoảng cách — 12 vừa mắt trên 1080p và 1440p
+    gaps 12
+
+    // Chỉ center khi cột bị tràn (đỡ giật khi scroll)
+    center-focused-column "on-overflow"
+
+    // Viền gradient nhẹ — rẻ cho iGPU
+    focus-ring {
+        width 2
+        active-gradient from="#7fc8ff" to="#c39bff" angle=45
+        inactive-color "#3a3a3a"
+    }
+
+    // Tắt border, dùng focus-ring là đủ
+    border {
+        off
+    }
+
+    // Shadow vừa phải: softness 24 thay vì 30-40 để không tụt FPS
+    shadow {
+        on
+        softness 24
+        spread 3
+        offset x=0 y=5
+        color "#00000066"
+    }
+
+    default-column-width { proportion 0.5; }
+
+    preset-column-widths {
+        proportion 0.33333
+        proportion 0.5
+        proportion 0.66667
+    }
+}
+
+// Bo góc cửa sổ (niri >= 25.05)
+window-rule {
+    geometry-corner-radius 10
+    clip-to-geometry true
+}
+
+// Animation ngắn — đủ mượt, không drop frame trên iGPU
+animations {
+    window-open   { duration-ms 180; curve "ease-out-expo"; }
+    window-close  { duration-ms 140; curve "ease-out-quad"; }
+    workspace-switch { duration-ms 300; curve "ease-out-expo"; }
+}
+
+// Bắt app bỏ client-side decoration -> bo góc + shadow đẹp hơn
+prefer-no-csd
+
+// Lưu ý: niri KHÔNG có blur. Đừng tìm hiệu ứng mờ — không tồn tại.

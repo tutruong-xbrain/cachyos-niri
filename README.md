@@ -113,9 +113,11 @@ cachyos-niri/
 ├── post-install.sh            # cài gói + tweak hệ thống
 ├── verify.sh                  # kiểm tra sau khi cài
 ├── flash-usb.sh               # ghi ISO ra USB (chạy bằng sudo)
+├── theme.sh                   # font, icon, cursor, ghostty, matugen
 └── config/
     ├── niri/config.kdl        # config custom Omarchy-style (NIRI_MODE=full)
     ├── niri/hardware.kdl      # CHỈ phần cứng — include vào config CachyOS
+    ├── niri/pretty.kdl        # snippet giao diện — SỬA TAY, không include
     ├── environment.d/10-wayland.conf
     ├── modprobe.d/99-nvidia.conf
     ├── modprobe.d/99-acer-audio.conf
@@ -139,22 +141,58 @@ NIRI_MODE=full ./post-install.sh      # thay bằng config custom Omarchy-style
 - `full`: dùng `config/niri/config.kdl` của repo — keybind kiểu Omarchy,
   tự set mọi thứ. Config cũ luôn được backup trước khi ghi đè.
 
+---
+
+## 5. Giao diện ("đẹp") — tương thích Intel UHD + 2 màn 144Hz
+
+`post-install.sh` tự chạy `theme.sh` (tắt bằng `PRETTY=0`). Nó cài:
+
+| Thành phần | Gói |
+|---|---|
+| Font UI | `inter-font` |
+| Font terminal | `ttf-jetbrains-mono-nerd` |
+| Icon | `papirus-icon-theme` |
+| GTK theme | `adw-gtk-theme` |
+| Terminal | `ghostty` (+ config sẵn) |
+| Wallpaper daemon | `wpaperd` |
+| Sinh màu từ ảnh | `matugen` |
+| Cursor (AUR, optional) | `bibata-cursor-theme` |
+
+### Giới hạn phần cứng cần nhớ
+
+- **niri không có blur** — đừng tìm hiệu ứng mờ, không tồn tại.
+- Intel UHD gánh 2 màn 144Hz → giữ `shadow softness ≤ 24`, animation ≤ 300ms.
+  `pretty.kdl` đã đặt sẵn mức an toàn.
+- **`pretty.kdl` KHÔNG được include tự động.** Config CachyOS đã có block
+  `layout {}`, `animations {}`, `window-rule {}`; include thêm sẽ lỗi trùng
+  section. Muốn dùng thì mở `~/.config/niri/config.kdl`, thay giá trị trong
+  block tương ứng bằng giá trị trong `pretty.kdl`, rồi `niri validate`.
+
+### Theme màu
+
+Cách nhanh nhất: dùng Noctalia → Settings → Wallpaper → chọn ảnh, nó tự
+đồng bộ màu sang bar/launcher. `matugen` chỉ hữu ích nếu bạn tự viết template
+(`~/.config/matugen/config.toml`).
+
+
 
 ---
 
-## 5. Thứ tự làm
+## 6. Thứ tự làm
 
 1. Copy thư mục này ra USB.
 2. Cài CachyOS theo mục 1.
 3. Copy thư mục về `~/cachyos-niri`.
-4. `./post-install.sh`
+4. `./post-install.sh` (tự chạy cả `theme.sh`).
 5. Reboot, đăng nhập Niri.
 6. `./verify.sh` — phải xanh hết.
-7. Chỉnh `~/.config/niri/config.kdl` theo thói quen (layout "us" → "vn" nếu cần).
+7. Chọn wallpaper trong Noctalia (mục 5) → nó tự sync màu.
+8. Nếu muốn gaps/shadow/animation: đối chiếu `pretty.kdl` rồi sửa tay.
+9. Chỉnh `~/.config/niri/config.kdl` theo thói quen (layout "us" → "vn" nếu cần).
 
 ---
 
-## 6. Việc cần làm ngay sau khi vào niri
+## 7. Việc cần làm ngay sau khi vào niri
 
 ```bash
 # 1. Đổi wallpaper (config đang trỏ /home/tutruong/Pictures/wallpaper.jpg)
@@ -173,7 +211,7 @@ Kiểm tra lại toàn bộ: `niri validate` (báo lỗi cú pháp KDL trước 
 
 ---
 
-## 7. Nếu sau này muốn quay lại Omarchy
+## 8. Nếu sau này muốn quay lại Omarchy
 
 Không cần cài lại: Omarchy chỉ là bộ config trên Arch. Nhưng đơn giản nhất là
 giữ một snapshot Btrfs trước khi đổi, hoặc cài lại từ ISO Omarchy.
