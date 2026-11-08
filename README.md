@@ -112,8 +112,10 @@ cachyos-niri/
 ├── README.md                  # file này
 ├── post-install.sh            # cài gói + tweak hệ thống
 ├── verify.sh                  # kiểm tra sau khi cài
+├── flash-usb.sh               # ghi ISO ra USB (chạy bằng sudo)
 └── config/
-    ├── niri/config.kdl        # -> ~/.config/niri/config.kdl
+    ├── niri/config.kdl        # config custom Omarchy-style (NIRI_MODE=full)
+    ├── niri/hardware.kdl      # CHỈ phần cứng — include vào config CachyOS
     ├── environment.d/10-wayland.conf
     ├── modprobe.d/99-nvidia.conf
     ├── modprobe.d/99-acer-audio.conf
@@ -121,6 +123,22 @@ cachyos-niri/
     ├── sysctl.d/99-laptop.conf
     └── nvidia-profiles/50-niri-vram.json
 ```
+
+### Chọn kiểu cấu hình niri
+
+CachyOS đã cài sẵn `cachyos-niri-settings` + `cachyos-niri-noctalia`
+(config + theme + keybind + Noctalia). Mặc định script **không ghi đè**:
+
+```bash
+./post-install.sh                     # giữ config CachyOS + include hardware.kdl  ← khuyến nghị
+NIRI_MODE=full ./post-install.sh      # thay bằng config custom Omarchy-style
+```
+
+- `hardware` (mặc định): giữ theme/keybind/Noctalia của CachyOS, chỉ thêm
+  render device + output. Ít rủi ro nhất.
+- `full`: dùng `config/niri/config.kdl` của repo — keybind kiểu Omarchy,
+  tự set mọi thứ. Config cũ luôn được backup trước khi ghi đè.
+
 
 ---
 

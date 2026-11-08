@@ -1,0 +1,31 @@
+// ============================================================
+//  Phần cứng — Acer Nitro 5 AN515-57
+//  File này được INCLUDE từ config.kdl chính của CachyOS,
+//  không thay thế config của họ.
+//
+//  Thêm 1 dòng vào cuối ~/.config/niri/config.kdl:
+//      include "hardware.kdl"
+// ============================================================
+
+// Compositor chạy trên Intel iGPU, không phải NVIDIA
+// Intel = 00:02.0 -> renderD129 ; NVIDIA = 01:00.0 -> renderD128
+// Kiểm tra lại: ls -l /dev/dri/by-path/*-render
+debug {
+    render-drm-device "/dev/dri/renderD129"
+}
+
+// Màn laptop 1080p 144Hz
+output "eDP-1" {
+    mode "1920x1080@144.003"
+    scale 1.0
+    position x=0 y=0
+}
+
+// Màn ngoài 1440p 144Hz (nối qua Intel / USB-C-Thunderbolt)
+// Nếu không cắm màn ngoài thì niri tự bỏ qua block này.
+output "DP-2" {
+    mode "2560x1440@143.998"
+    scale 1.0
+    position x=1920 y=0
+    variable-refresh-rate
+}

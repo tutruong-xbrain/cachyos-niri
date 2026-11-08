@@ -6,10 +6,14 @@
 #  Chạy bằng user thường (có sudo), KHÔNG chạy bằng root.
 #  Biến môi trường:
 #    ENABLE_ACER_AUDIO_QUIRK=1  -> bật quirk ALC295 nếu lỗi tai nghe
+#    NIRI_MODE=hardware|full    -> hardware (mặc định): giữ config niri
+#                                  của CachyOS, chỉ include hardware.kdl
+#                                  full: thay bằng config custom Omarchy-style
 # ============================================================
 set -uo pipefail
 
 ENABLE_ACER_AUDIO_QUIRK="${ENABLE_ACER_AUDIO_QUIRK:-0}"
+NIRI_MODE="${NIRI_MODE:-hardware}"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 msg()  { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
@@ -86,9 +90,28 @@ mkdir -p "$HOME/.config/niri" "$HOME/.config/environment.d" "$HOME/Pictures/Scre
 
 if [ -f "$HOME/.config/niri/config.kdl" ]; then
   cp "$HOME/.config/niri/config.kdl" "$HOME/.config/niri/config.kdl.bak.$(date +%s)"
-  warn "Đã backup config niri cũ"
+  warn "Đã backup config niri hiện có"
 fi
-install -Dm644 "$HERE/config/niri/config.kdl" "$HOME/.config/niri/config.kdl"
+
+install -Dm644 "$HERE/config/niri/hardware.kdl" "$HOME/.config/niri/hardware.kdl"
+
+if [ "$NIRI_MODE" = "full" ]; then
+  install -Dm644 "$HERE/config/niri/config.kdl" "$HOME/.config/niri/config.kdl"
+  ok "Đã thay config niri bằng bản custom (Omarchy-style)"
+else
+  if [ ! -f "$HOME/.config/niri/config.kdl" ]; then
+    install -Dm644 "$HERE/config/niri/config.kdl" "$HOME/.config/niri/config.kdl"
+    warn "Chưa có config CachyOS -> dùng bản custom"
+  elif grep -q 'include "hardware.kdl"' "$HOME/.config/niri/config.kdl"; then
+    ok "config CachyOS đã include hardware.kdl"
+  else
+    printf '\n// --- phần cứng AN515-57 (thêm bởi post-install.sh) ---\ninclude "hardware.kdl"\n' \
+      >> "$HOME/.config/niri/config.kdl"
+    ok "Đã include hardware.kdl vào config CachyOS (giữ theme/keybind của họ)"
+    warn "Nếu config CachyOS đã có sẵn block 'output' hoặc 'debug', hãy comment block đó"
+    warn "rồi chạy: niri validate"
+  fi
+fi
 install -Dm644 "$HERE/config/environment.d/10-wayland.conf" "$HOME/.config/environment.d/10-wayland.conf"
 sudo install -Dm644 "$HERE/config/modprobe.d/99-nvidia.conf" /etc/modprobe.d/99-nvidia.conf
 sudo install -Dm644 "$HERE/config/zram-generator.conf" /etc/systemd/zram-generator.conf
@@ -127,6 +150,9 @@ printf '  renderD map : '; ls -l /dev/dri/by-path/*-render 2>/dev/null | awk '{p
 printf '  sched_ext   : '; cat /sys/kernel/sched_ext/state 2>/dev/null || echo n/a
 printf '  nvidia      : '; (nvidia-smi --query-gpu=name,driver_version --format=csv,noheader 2>/dev/null || echo "chưa load")
 printf '  audio codec : '; grep -m1 '^Codec:' /proc/asound/card*/codec#0 2>/dev/null || echo n/a
+if command -v niri >/dev/null; then
+  printf '  niri config : '; niri validate 2>&1 | tail -1
+fi
 
 cat <<'EOF'
 
