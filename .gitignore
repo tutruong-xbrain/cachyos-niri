@@ -1,0 +1,13 @@
+# backup / tạm
+*.bak
+*.bak.*
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# editor
+.idea/
+.vscode/
